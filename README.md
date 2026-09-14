@@ -69,6 +69,9 @@ from outside a CI runner, this is not that.
 This is the same workflow this repository runs on every push to verify the action
 still works — see [`.github/workflows/test.yml`](.github/workflows/test.yml).
 
+<details>
+<summary>Full workflow YAML</summary>
+
 ```yaml
 name: CI
 
@@ -94,6 +97,8 @@ jobs:
             --header "Content-Type: application/json" \
             --data '{"Query": "from Orders"}'
 ```
+
+</details>
 
 ## Inputs
 

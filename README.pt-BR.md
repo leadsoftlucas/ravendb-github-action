@@ -71,6 +71,9 @@ multi-node e acessível de fora de um runner de CI, não é isto.
 Este é o mesmo workflow que este repositório executa a cada push para verificar que
 a action continua funcionando — veja [`.github/workflows/test.yml`](.github/workflows/test.yml).
 
+<details>
+<summary>YAML completo do workflow</summary>
+
 ```yaml
 name: CI
 
@@ -96,6 +99,8 @@ jobs:
             --header "Content-Type: application/json" \
             --data '{"Query": "from Orders"}'
 ```
+
+</details>
 
 ## Inputs
 
