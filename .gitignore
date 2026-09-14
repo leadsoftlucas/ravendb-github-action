@@ -1,0 +1,18 @@
+# This is a composite GitHub Action (YAML + shell) — there is no build step and
+# nothing here is intentionally excluding shipped code. Keep this file limited
+# to local OS/editor noise.
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# VS Code
+.vscode/*
+!.vscode/extensions.json
+
+# Local scratch output from manually testing scripts/start.sh
+*.log
+response.json

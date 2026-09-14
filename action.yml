@@ -1,0 +1,65 @@
+name: "Setup RavenDB"
+description: >-
+  Spin up a real RavenDB server in your GitHub Actions workflow for integration
+  testing — no manual installation, no external service, ready in seconds via
+  the official ravendb/ravendb Docker image.
+author: "Lucas R. Tavares"
+
+branding:
+  icon: "database"
+  color: "red"
+
+inputs:
+  version:
+    description: >-
+      Tag of the official ravendb/ravendb Docker image to run, e.g. "ubuntu-latest",
+      "ubuntu-latest-lts", or a pinned version such as "6.2-ubuntu.22.04-x64".
+      See https://hub.docker.com/r/ravendb/ravendb/tags for all available tags.
+    required: false
+    default: "ubuntu-latest"
+  port:
+    description: "Host port to publish RavenDB's HTTP API on."
+    required: false
+    default: "8080"
+  container-name:
+    description: "Name given to the RavenDB Docker container."
+    required: false
+    default: "ravendb-ci"
+  database-name:
+    description: >-
+      Name of a database to create once the server is ready. Leave empty to
+      start a bare server with no database.
+    required: false
+    default: ""
+  load-sample-data:
+    description: >-
+      When "true" and database-name is set, loads RavenDB's built-in Northwind
+      sample dataset into the newly created database.
+    required: false
+    default: "false"
+  startup-timeout-seconds:
+    description: "Seconds to wait for the RavenDB server to become ready before failing the step."
+    required: false
+    default: "60"
+
+outputs:
+  url:
+    description: "Base URL of the running RavenDB server, e.g. http://localhost:8080."
+    value: ${{ steps.start.outputs.url }}
+  container-id:
+    description: "Docker container ID of the running RavenDB server."
+    value: ${{ steps.start.outputs.container-id }}
+
+runs:
+  using: "composite"
+  steps:
+    - id: start
+      shell: bash
+      run: "${{ github.action_path }}/scripts/start.sh"
+      env:
+        VERSION: ${{ inputs.version }}
+        PORT: ${{ inputs.port }}
+        CONTAINER_NAME: ${{ inputs.container-name }}
+        DATABASE_NAME: ${{ inputs.database-name }}
+        LOAD_SAMPLE_DATA: ${{ inputs.load-sample-data }}
+        STARTUP_TIMEOUT: ${{ inputs.startup-timeout-seconds }}

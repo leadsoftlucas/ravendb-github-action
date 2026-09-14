@@ -1,0 +1,43 @@
+name: Test action
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  self-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Start RavenDB
+        id: ravendb
+        uses: ./
+        with:
+          database-name: Northwind
+          load-sample-data: "true"
+
+      - name: Query the Northwind sample data
+        run: |
+          curl --fail --silent -X POST \
+            "${{ steps.ravendb.outputs.url }}/databases/Northwind/queries" \
+            --header "Content-Type: application/json" \
+            --data '{"Query": "from Orders"}' \
+            | tee response.json
+
+          count=$(jq '.Results | length' response.json)
+          echo "Orders returned: ${count}"
+          if [ "${count}" -le 0 ]; then
+            echo "::error::Expected Northwind sample data, got no results"
+            exit 1
+          fi
+
+      - name: Verify outputs
+        run: |
+          test -n "${{ steps.ravendb.outputs.url }}"
+          test -n "${{ steps.ravendb.outputs.container-id }}"
