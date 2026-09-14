@@ -1,13 +1,23 @@
-🇺🇸 English | [🇧🇷 Português](README.pt-BR.md)
+<div align="center">
 
-# Setup RavenDB — a GitHub Action for running RavenDB in CI
+# Setup RavenDB — GitHub Action
 
-A free, open-source GitHub Action that starts a real [RavenDB](https://ravendb.net) server
-inside a GitHub Actions job, using the official [`ravendb/ravendb`](https://hub.docker.com/r/ravendb/ravendb)
-Docker image. It exists so a workflow can run integration tests against an actual
-RavenDB instance — not a mock, not an embedded stub — with no manual installation
-and no external service to provision. The server is ready in seconds and is torn
-down automatically when the job's runner is discarded.
+**🇺🇸 English** · [🇧🇷 Português (Brasil)](README.pt-BR.md)
+
+A free, open-source GitHub Action that spins up a real **RavenDB** server in your CI
+pipeline — via the official Docker image, ready in seconds, zero manual setup.
+
+[![Self-test](https://img.shields.io/github/actions/workflow/status/leadsoftlucas/ravendb-github-action/test.yml?branch=main&label=self-test)](.github/workflows/test.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![RavenDB](https://img.shields.io/badge/RavenDB-CI-b3131e)](https://ravendb.net)
+[![Docker: ravendb/ravendb](https://img.shields.io/badge/Docker-ravendb%2Fravendb-2496ED?logo=docker&logoColor=white)](https://hub.docker.com/r/ravendb/ravendb)
+
+</div>
+
+It exists so a workflow can run integration tests against an actual
+[RavenDB](https://ravendb.net) instance — not a mock, not an embedded stub — with no
+manual installation and no external service to provision. The server is ready in
+seconds and is torn down automatically when the job's runner is discarded.
 
 > **Independent project, not an official RavenDB release.** This action is built
 > and maintained by [Lucas R. Tavares](https://github.com/leadsoftlucas), a RavenDB
