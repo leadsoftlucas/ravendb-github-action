@@ -17,17 +17,43 @@ if [ -n "${DATABASE_NAME}" ] && ! [[ "${DATABASE_NAME}" =~ ^[A-Za-z0-9_.-]+$ ]];
   echo "::error::database-name '${DATABASE_NAME}' may only contain letters, digits, '_', '-' and '.'"
   exit 1
 fi
-if ! [[ "${PORT}" =~ ^[0-9]+$ ]] || ! [[ "${STARTUP_TIMEOUT}" =~ ^[0-9]+$ ]]; then
-  echo "::error::port and startup-timeout-seconds must be positive integers"
+if ! [[ "${PORT}" =~ ^[0-9]+$ ]] || [ "${PORT}" -lt 1 ] || [ "${PORT}" -gt 65535 ]; then
+  echo "::error::port '${PORT}' must be an integer between 1 and 65535"
+  exit 1
+fi
+if ! [[ "${STARTUP_TIMEOUT}" =~ ^[0-9]+$ ]] || [ "${STARTUP_TIMEOUT}" -lt 1 ]; then
+  echo "::error::startup-timeout-seconds '${STARTUP_TIMEOUT}' must be a positive integer"
+  exit 1
+fi
+if ! [[ "${CONTAINER_NAME}" =~ ^[A-Za-z0-9][A-Za-z0-9_.-]*$ ]]; then
+  echo "::error::container-name '${CONTAINER_NAME}' is not a valid Docker container name"
   exit 1
 fi
 
 IMAGE="ravendb/ravendb:${VERSION}"
 URL="http://localhost:${PORT}"
 
+if docker inspect "${CONTAINER_NAME}" >/dev/null 2>&1; then
+  echo "::error::a Docker container named '${CONTAINER_NAME}' already exists; choose another container-name or remove it"
+  exit 1
+fi
+
 echo "::group::Pulling ${IMAGE}"
-docker pull "${IMAGE}"
+if ! docker pull "${IMAGE}"; then
+  echo "::endgroup::"
+  echo "::error::could not pull ${IMAGE}; check that the version tag exists at https://hub.docker.com/r/ravendb/ravendb/tags"
+  exit 1
+fi
 echo "::endgroup::"
+
+# From here on, never leave a half-started container behind on failure.
+cleanup_on_failure() {
+  status=$?
+  if [ "${status}" -ne 0 ]; then
+    docker rm --force "${CONTAINER_NAME}" >/dev/null 2>&1 || true
+  fi
+}
+trap cleanup_on_failure EXIT
 
 echo "::group::Starting RavenDB (container: ${CONTAINER_NAME}, port: ${PORT})"
 # RAVEN_Setup_Mode=None skips the interactive setup wizard; combined with
@@ -35,14 +61,18 @@ echo "::group::Starting RavenDB (container: ${CONTAINER_NAME}, port: ${PORT})"
 # (no HTTPS/client certificate) server, which is fine for an ephemeral CI
 # runner but must never be used for anything reachable from outside the job.
 # See: https://docs.ravendb.net/start/containers/dockerfile/dockerfile-overview
-docker run --detach \
+if ! docker run --detach \
   --name "${CONTAINER_NAME}" \
   --publish "${PORT}:8080" \
   --env RAVEN_Setup_Mode=None \
   --env RAVEN_Security_UnsecuredAccessAllowed=PrivateNetwork \
   --env RAVEN_License_Eula_Accepted=true \
   --env RAVEN_ARGS="--log-to-console" \
-  "${IMAGE}"
+  "${IMAGE}"; then
+  echo "::endgroup::"
+  echo "::error::docker run failed (is host port ${PORT} already in use?)"
+  exit 1
+fi
 echo "::endgroup::"
 
 echo "Waiting up to ${STARTUP_TIMEOUT}s for RavenDB to answer at ${URL}/setup/alive ..."
