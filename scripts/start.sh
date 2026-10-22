@@ -11,6 +11,17 @@ set -euo pipefail
 DATABASE_NAME="${DATABASE_NAME:-}"
 LOAD_SAMPLE_DATA="${LOAD_SAMPLE_DATA:-false}"
 
+# Reject values that would break the JSON body / docker arguments below.
+# RavenDB database names allow letters, digits, '_', '-' and '.'.
+if [ -n "${DATABASE_NAME}" ] && ! [[ "${DATABASE_NAME}" =~ ^[A-Za-z0-9_.-]+$ ]]; then
+  echo "::error::database-name '${DATABASE_NAME}' may only contain letters, digits, '_', '-' and '.'"
+  exit 1
+fi
+if ! [[ "${PORT}" =~ ^[0-9]+$ ]] || ! [[ "${STARTUP_TIMEOUT}" =~ ^[0-9]+$ ]]; then
+  echo "::error::port and startup-timeout-seconds must be positive integers"
+  exit 1
+fi
+
 IMAGE="ravendb/ravendb:${VERSION}"
 URL="http://localhost:${PORT}"
 
@@ -36,7 +47,12 @@ echo "::endgroup::"
 
 echo "Waiting up to ${STARTUP_TIMEOUT}s for RavenDB to answer at ${URL}/setup/alive ..."
 deadline=$((SECONDS + STARTUP_TIMEOUT))
-until curl --fail --silent --show-error --output /dev/null "${URL}/setup/alive" 2>/dev/null; do
+until curl --fail --silent --max-time 2 --output /dev/null "${URL}/setup/alive" 2>/dev/null; do
+  if [ "$(docker inspect --format '{{.State.Running}}' "${CONTAINER_NAME}" 2>/dev/null)" != "true" ]; then
+    echo "::error::RavenDB container exited before becoming ready"
+    docker logs "${CONTAINER_NAME}" || true
+    exit 1
+  fi
   if [ "${SECONDS}" -ge "${deadline}" ]; then
     echo "::error::RavenDB did not become ready within ${STARTUP_TIMEOUT}s"
     echo "::group::docker logs ${CONTAINER_NAME}"
@@ -50,14 +66,14 @@ echo "RavenDB is up at ${URL}"
 
 if [ -n "${DATABASE_NAME}" ]; then
   echo "Creating database '${DATABASE_NAME}'..."
-  curl --fail --silent --show-error -X PUT "${URL}/admin/databases" \
+  curl --fail --silent --show-error --max-time 60 -X PUT "${URL}/admin/databases" \
     --header "Content-Type: application/json" \
     --data "{\"DatabaseName\": \"${DATABASE_NAME}\"}" \
     --output /dev/null
 
   if [ "${LOAD_SAMPLE_DATA}" = "true" ]; then
     echo "Loading the Northwind sample dataset into '${DATABASE_NAME}'..."
-    curl --fail --silent --show-error -X POST \
+    curl --fail --silent --show-error --max-time 120 -X POST \
       "${URL}/databases/${DATABASE_NAME}/studio/sample-data" \
       --output /dev/null
   fi
@@ -65,5 +81,5 @@ fi
 
 {
   echo "url=${URL}"
-  echo "container-id=$(docker ps -q --filter "name=^${CONTAINER_NAME}$")"
+  echo "container-id=$(docker inspect --format '{{.Id}}' "${CONTAINER_NAME}")"
 } >> "${GITHUB_OUTPUT}"

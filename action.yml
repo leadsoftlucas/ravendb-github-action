@@ -13,7 +13,7 @@ inputs:
   version:
     description: >-
       Tag of the official ravendb/ravendb Docker image to run, e.g. "ubuntu-latest",
-      "ubuntu-latest-lts", or a pinned version such as "6.2-ubuntu.22.04-x64".
+      "ubuntu-latest-lts", or a pinned version such as "6.2.20-ubuntu.22.04-x64".
       See https://hub.docker.com/r/ravendb/ravendb/tags for all available tags.
     required: false
     default: "ubuntu-latest"
@@ -55,7 +55,7 @@ runs:
   steps:
     - id: start
       shell: bash
-      run: "${{ github.action_path }}/scripts/start.sh"
+      run: bash "${{ github.action_path }}/scripts/start.sh"
       env:
         VERSION: ${{ inputs.version }}
         PORT: ${{ inputs.port }}
