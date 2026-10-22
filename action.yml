@@ -1,8 +1,8 @@
 name: "Setup RavenDB"
 description: >-
   Spin up a real RavenDB server in your GitHub Actions workflow for integration
-  testing — no manual installation, no external service, ready in seconds via
-  the official ravendb/ravendb Docker image.
+  testing — no manual installation, no external service, via
+  the official ravendb/ravendb Docker image (about 10-40 seconds including the image pull).
 author: "Lucas R. Tavares"
 
 branding:

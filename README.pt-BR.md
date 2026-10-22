@@ -5,7 +5,7 @@
 [🇺🇸 English](README.md) · **🇧🇷 Português (Brasil)**
 
 Uma GitHub Action gratuita e de código aberto que sobe um servidor **RavenDB** real
-no seu pipeline de CI — via imagem Docker oficial, pronta em segundos, sem
+no seu pipeline de CI — via imagem Docker oficial, sem
 configuração manual.
 
 [![Self-test](https://img.shields.io/github/actions/workflow/status/leadsoftlucas/ravendb-github-action/test.yml?branch=main&label=self-test)](.github/workflows/test.yml)
@@ -18,7 +18,7 @@ configuração manual.
 Ela existe para que um workflow possa rodar testes de integração contra uma instância
 real do [RavenDB](https://ravendb.net) — não um mock, não um stub embarcado — sem
 instalação manual e sem depender de um serviço externo. O servidor fica pronto em
-segundos. Nos runners hospedados pelo GitHub, ele desaparece junto com o runner ao fim do
+Medido localmente, o servidor fica pronto cerca de 10 segundos após o `docker run` com a imagem em cache, e o passo inteiro levou de 9 a 40 segundos incluindo o download da imagem (cerca de 1,1 GB; os tempos nos runners vão variar). Nos runners hospedados pelo GitHub, ele desaparece junto com o runner ao fim do
 job; a action não tem um passo de limpeza próprio (veja [Notas de segurança](#notas-de-segurança)).
 
 > **Projeto independente, não é um lançamento oficial da RavenDB.** Esta action é
@@ -108,8 +108,8 @@ jobs:
 | Nome                        | Descrição                                                                                                                                       | Padrão            |
 | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------ |
 | `version`                  | Tag da imagem oficial `ravendb/ravendb` a executar — ex.: `ubuntu-latest`, `ubuntu-latest-lts`, ou uma versão fixa. [Todas as tags](https://hub.docker.com/r/ravendb/ravendb/tags). | `ubuntu-latest`   |
-| `port`                     | Porta do host onde a API HTTP do RavenDB é publicada.                                                                                             | `8080`            |
-| `container-name`           | Nome dado ao container Docker do RavenDB.                                                                                                         | `ravendb-ci`      |
+| `port`                     | Porta do host (1-65535) onde a API HTTP do RavenDB é publicada.                                                                                             | `8080`            |
+| `container-name`           | Nome dado ao container Docker do RavenDB. O passo falha se já existir um container com esse nome.                                                                                                         | `ravendb-ci`      |
 | `database-name`            | Nome de um banco de dados a ser criado assim que o servidor estiver pronto. Deixe vazio para subir um servidor sem banco.                         | *(vazio)*         |
 | `load-sample-data`         | Quando `true` (e `database-name` estiver definido), carrega o conjunto de dados de exemplo Northwind, já embutido no RavenDB.                     | `false`           |
 | `startup-timeout-seconds`  | Quantos segundos esperar o RavenDB ficar pronto antes de falhar o passo.                                                                          | `60`              |
@@ -164,10 +164,10 @@ documentada da RavenDB (`PUT /admin/databases`, `POST /databases/<nome>/studio/s
 - Nunca publique a porta usada por esta action além do runner, e nunca aponte para
   dados que você não pode se dar ao luxo de expor. Esta action é só para bancos de
   CI efêmeros.
-- O container não é removido pela action. Os runners hospedados pelo GitHub são descartados
+- Se o próprio passo falhar (entrada inválida, falha no pull da imagem, porta em uso, timeout de prontidão), a action remove o container iniciado pela metade. Em caso de sucesso, o container não é removido pela action. Os runners hospedados pelo GitHub são descartados
   após cada job, então nada sobra ali; em runners **self-hosted**, adicione seu próprio passo
   `docker rm -f ravendb-ci` (ex.: `if: always()`), senão o nome de container e a porta fixos
-  vão colidir na próxima execução.
+  vão colidir na próxima execução (o passo então falha com um `::error::` claro).
 
 ## Versionamento
 
