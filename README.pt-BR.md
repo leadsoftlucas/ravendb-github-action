@@ -18,7 +18,8 @@ configuração manual.
 Ela existe para que um workflow possa rodar testes de integração contra uma instância
 real do [RavenDB](https://ravendb.net) — não um mock, não um stub embarcado — sem
 instalação manual e sem depender de um serviço externo. O servidor fica pronto em
-segundos e é descartado automaticamente junto com o runner do job.
+segundos. Nos runners hospedados pelo GitHub, ele desaparece junto com o runner ao fim do
+job; a action não tem um passo de limpeza próprio (veja [Notas de segurança](#notas-de-segurança)).
 
 > **Projeto independente, não é um lançamento oficial da RavenDB.** Esta action é
 > construída e mantida por [Lucas R. Tavares](https://github.com/leadsoftlucas),
@@ -68,8 +69,8 @@ multi-node e acessível de fora de um runner de CI, não é isto.
 
 ## Exemplo completo: consultando os dados de exemplo do Northwind
 
-Este é o mesmo workflow que este repositório executa a cada push para verificar que
-a action continua funcionando — veja [`.github/workflows/test.yml`](.github/workflows/test.yml).
+Este é baseado no workflow que este repositório executa a cada push para verificar que
+a action continua funcionando (ele usa `uses: ./` e um passo extra de verificação) — veja [`.github/workflows/test.yml`](.github/workflows/test.yml).
 
 <details>
 <summary>YAML completo do workflow</summary>
@@ -125,9 +126,9 @@ jobs:
 - Um runner Linux com Docker disponível (`ubuntu-latest` nos runners hospedados pelo
   GitHub). O Docker já vem pré-instalado ali; esta action não roda Docker-in-Docker
   nem precisa de qualquer configuração privilegiada.
-- Nenhuma licença do RavenDB é necessária. A imagem Docker roda sem segurança e sem
-  licença, o que a RavenDB permite para uso de desenvolvimento e avaliação —
-  exatamente o caso de uma execução de CI.
+- Nenhuma licença paga do RavenDB é necessária. O servidor roda sob a licença Community
+  gratuita do RavenDB (a action aceita o EULA por você via `RAVEN_License_Eula_Accepted=true`,
+  então ao usá-la você concorda com os termos da RavenDB). Valem os limites da edição Community.
 
 ## Como funciona
 
@@ -155,7 +156,7 @@ documentada da RavenDB (`PUT /admin/databases`, `POST /databases/<nome>/studio/s
 
 ## Notas de segurança
 
-- O servidor iniciado por esta action é **proposital e deliberadamente inseguro** —
+- O servidor iniciado por esta action é **inseguro por design** —
   sem HTTPS, sem autenticação por certificado de cliente — porque essa é a forma
   correta e documentada de rodar o RavenDB para desenvolvimento local e CI de vida
   curta, onde a instância nunca sobrevive além do job e nunca é acessível de fora
@@ -163,6 +164,10 @@ documentada da RavenDB (`PUT /admin/databases`, `POST /databases/<nome>/studio/s
 - Nunca publique a porta usada por esta action além do runner, e nunca aponte para
   dados que você não pode se dar ao luxo de expor. Esta action é só para bancos de
   CI efêmeros.
+- O container não é removido pela action. Os runners hospedados pelo GitHub são descartados
+  após cada job, então nada sobra ali; em runners **self-hosted**, adicione seu próprio passo
+  `docker rm -f ravendb-ci` (ex.: `if: always()`), senão o nome de container e a porta fixos
+  vão colidir na próxima execução.
 
 ## Versionamento
 
@@ -175,15 +180,13 @@ você.
 
 ## Status e escopo
 
-Este repositório é o item **D1** de um esforço independente para fechar uma lacuna
-específica e observável: no momento em que isto foi escrito, buscar por "ravendb"
+Este repositório é um esforço independente para fechar uma lacuna específica e
+observável: no momento em que isto foi escrito, buscar por "ravendb"
 no [GitHub Marketplace](https://github.com/marketplace) retornava zero resultados,
 enquanto bancos comparáveis (MongoDB, DynamoDB, InfluxDB, Couchbase) aparecem
 representados por várias actions listadas. Esta é a correção gratuita e de baixo
 esforço — uma action no estilo `setup-<database>` para CI, sem cobrança e sem
-provisionamento em nuvem. Um projeto separado e bem maior (um GitHub App pago com
-provisionamento no RavenDB Cloud e cobrança) é um trabalho diferente e não
-relacionado, fora do escopo deste repositório.
+provisionamento em nuvem. O provisionamento no RavenDB Cloud está fora do escopo deste repositório.
 
 Se a RavenDB (a empresa) decidir adotar, fazer fork, ou assumir oficialmente este
 projeto, essa é uma decisão da RavenDB a ser tomada — este repositório não presume

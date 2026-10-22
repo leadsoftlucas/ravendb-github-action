@@ -17,7 +17,8 @@ pipeline — via the official Docker image, ready in seconds, zero manual setup.
 It exists so a workflow can run integration tests against an actual
 [RavenDB](https://ravendb.net) instance — not a mock, not an embedded stub — with no
 manual installation and no external service to provision. The server is ready in
-seconds and is torn down automatically when the job's runner is discarded.
+seconds. On GitHub-hosted runners it disappears with the runner when the job ends; the
+action has no cleanup step of its own (see [Security notes](#security-notes)).
 
 > **Independent project, not an official RavenDB release.** This action is built
 > and maintained by [Lucas R. Tavares](https://github.com/leadsoftlucas), a RavenDB
@@ -66,8 +67,8 @@ from outside a CI runner, this is not that.
 
 ## Full example: querying the Northwind sample data
 
-This is the same workflow this repository runs on every push to verify the action
-still works — see [`.github/workflows/test.yml`](.github/workflows/test.yml).
+This is modeled on the workflow this repository runs on every push to verify the
+action still works (it uses `uses: ./` and an extra assertion step) — see [`.github/workflows/test.yml`](.github/workflows/test.yml).
 
 <details>
 <summary>Full workflow YAML</summary>
@@ -123,8 +124,9 @@ jobs:
 - A Linux runner with Docker available (`ubuntu-latest` on GitHub-hosted runners).
   Docker is preinstalled there; this action does not run Docker-in-Docker or need
   any privileged setup.
-- No RavenDB license is required. The Docker image runs unsecured and unlicensed,
-  which RavenDB permits for development and evaluation use — exactly what a CI run is.
+- No paid RavenDB license is required. The server runs under RavenDB's free Community
+  license (the action accepts the license EULA for you via `RAVEN_License_Eula_Accepted=true`,
+  so by using it you agree to RavenDB's terms). Community edition limits apply.
 
 ## How it works
 
@@ -158,6 +160,10 @@ same calls the RavenDB Studio itself makes.
   outlives the job and is never reachable from outside the runner.
 - Never publish the port this action binds beyond the runner, and never point it at
   data you cannot afford to expose. This action is for ephemeral CI databases only.
+- The container is not removed by the action. GitHub-hosted runners are discarded after
+  each job, so nothing is left behind there; on **self-hosted** runners, add your own
+  `docker rm -f ravendb-ci` step (e.g. `if: always()`), otherwise the fixed container name
+  and port will collide on the next run.
 
 ## Versioning
 
@@ -169,15 +175,13 @@ a build that won't change under you.
 
 ## Status and scope
 
-This repository is item **D1** of an independent effort to close a specific,
-observable gap: at the time this was written, searching the
+This repository is an independent effort to close a specific, observable gap: at the
+time this was written, searching the
 [GitHub Marketplace](https://github.com/marketplace) for "ravendb" returned zero
 results, while comparable databases (MongoDB, DynamoDB, InfluxDB, Couchbase) are
 represented by multiple listed actions. This is the free, low-effort fix — a
 `setup-<database>`-style action for CI, with no billing and no cloud provisioning.
-A separate, materially larger project (a paid GitHub App with RavenDB Cloud
-provisioning and billing) is a different, unrelated body of work and is out of
-scope for this repository.
+RavenDB Cloud provisioning is out of scope for this repository.
 
 If RavenDB (the company) decides to adopt, fork, or officially take over this
 project, that is a decision for RavenDB to make — this repository does not presume
