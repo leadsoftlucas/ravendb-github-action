@@ -8,7 +8,7 @@ Uma GitHub Action gratuita e de código aberto que sobe um servidor **RavenDB** 
 no seu pipeline de CI — via imagem Docker oficial, sem
 configuração manual.
 
-[![Self-test](https://img.shields.io/github/actions/workflow/status/leadsoftlucas/ravendb-github-action/test.yml?branch=main&label=self-test)](.github/workflows/test.yml)
+[![Self-test](https://img.shields.io/github/actions/workflow/status/ravendb/ravendb-github-action/test.yml?branch=main&label=self-test)](.github/workflows/test.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![RavenDB](https://img.shields.io/badge/RavenDB-CI-b3131e)](https://ravendb.net)
 [![Docker: ravendb/ravendb](https://img.shields.io/badge/Docker-ravendb%2Fravendb-2496ED?logo=docker&logoColor=white)](https://hub.docker.com/r/ravendb/ravendb)
@@ -21,13 +21,7 @@ instalação manual e sem depender de um serviço externo. O servidor fica pront
 Medido localmente, o servidor fica pronto cerca de 10 segundos após o `docker run` com a imagem em cache, e o passo inteiro levou de 9 a 40 segundos incluindo o download da imagem (cerca de 1,1 GB; os tempos nos runners vão variar). Nos runners hospedados pelo GitHub, ele desaparece junto com o runner ao fim do
 job; a action não tem um passo de limpeza próprio (veja [Notas de segurança](#notas-de-segurança)).
 
-> **Projeto independente, não é um lançamento oficial da RavenDB.** Esta action é
-> construída e mantida por [Lucas R. Tavares](https://github.com/leadsoftlucas),
-> funcionário da RavenDB, por iniciativa própria e na sua conta pessoal do GitHub.
-> Ela **não é publicada pela empresa RavenDB, não tem cobertura do suporte oficial
-> da RavenDB, e não está listada no GitHub Marketplace.** Use, faça fork, ou copie
-> partes dela — só não assuma que ela carrega o respaldo institucional da RavenDB.
-> Veja [Status e escopo](#status-e-escopo) abaixo.
+> **Mantido pela RavenDB.** Criado originalmente por [Lucas R. Tavares](https://github.com/leadsoftlucas) (Sales Engineer / Solution Architect). Experimental: em revisão pela Engenharia; ainda sem cobertura de suporte oficial.
 
 ## O que ela faz
 
@@ -57,7 +51,7 @@ multi-node e acessível de fora de um runner de CI, não é isto.
 ```yaml
 - name: Start RavenDB
   id: ravendb
-  uses: leadsoftlucas/ravendb-github-action@main # em uso real, fixe num commit SHA — veja "Versionamento"
+  uses: ravendb/ravendb-github-action@main # em uso real, fixe num commit SHA — veja "Versionamento"
   with:
     database-name: MyTestDb
 
@@ -88,7 +82,7 @@ jobs:
 
       - name: Start RavenDB
         id: ravendb
-        uses: leadsoftlucas/ravendb-github-action@main
+        uses: ravendb/ravendb-github-action@main
         with:
           database-name: Northwind
           load-sample-data: "true"
@@ -180,7 +174,7 @@ você.
 
 ## Status e escopo
 
-Este repositório é um esforço independente para fechar uma lacuna específica e
+Este repositório existe para fechar uma lacuna específica e
 observável: no momento em que isto foi escrito, buscar por "ravendb"
 no [GitHub Marketplace](https://github.com/marketplace) retornava zero resultados,
 enquanto bancos comparáveis (MongoDB, DynamoDB, InfluxDB, Couchbase) aparecem
@@ -188,9 +182,18 @@ representados por várias actions listadas. Esta é a correção gratuita e de b
 esforço — uma action no estilo `setup-<database>` para CI, sem cobrança e sem
 provisionamento em nuvem. O provisionamento no RavenDB Cloud está fora do escopo deste repositório.
 
-Se a RavenDB (a empresa) decidir adotar, fazer fork, ou assumir oficialmente este
-projeto, essa é uma decisão da RavenDB a ser tomada — este repositório não presume
-isso de antemão.
+A action é experimental: está em revisão pela Engenharia da RavenDB e ainda não tem
+cobertura de suporte oficial. Ela **ainda não está listada no GitHub Marketplace** e
+ainda não tem o selo de criador verificado; esse selo exige o domínio verificado da
+organização, que agora pode ser solicitado, já que o repositório pertence à
+organização RavenDB.
+
+## Procedência
+
+Criado por Lucas R. Tavares na sua conta pessoal, em
+`github.com/leadsoftlucas/ravendb-github-action`, e transferido para a organização
+RavenDB em outubro de 2026, com todo o histórico e a autoria preservados. A licença
+é MIT, com os direitos autorais pertencentes à RavenDB.
 
 ## Contribuindo
 
@@ -200,7 +203,7 @@ expandir o escopo.
 
 ## Licença
 
-[MIT](LICENSE) © 2026 Lucas R. Tavares
+[MIT](LICENSE) © 2026 RavenDB
 
 ## Links relacionados
 

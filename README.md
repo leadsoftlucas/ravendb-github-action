@@ -7,7 +7,7 @@
 A free, open-source GitHub Action that spins up a real **RavenDB** server in your CI
 pipeline — via the official Docker image, zero manual setup.
 
-[![Self-test](https://img.shields.io/github/actions/workflow/status/leadsoftlucas/ravendb-github-action/test.yml?branch=main&label=self-test)](.github/workflows/test.yml)
+[![Self-test](https://img.shields.io/github/actions/workflow/status/ravendb/ravendb-github-action/test.yml?branch=main&label=self-test)](.github/workflows/test.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![RavenDB](https://img.shields.io/badge/RavenDB-CI-b3131e)](https://ravendb.net)
 [![Docker: ravendb/ravendb](https://img.shields.io/badge/Docker-ravendb%2Fravendb-2496ED?logo=docker&logoColor=white)](https://hub.docker.com/r/ravendb/ravendb)
@@ -21,13 +21,7 @@ is ready about 10 seconds after `docker run` once the image is cached, and the w
 took 9-40 seconds including the image pull (the image is about 1.1 GB; runner times will differ). On GitHub-hosted runners it disappears with the runner when the job ends; the
 action has no cleanup step of its own (see [Security notes](#security-notes)).
 
-> **Independent project, not an official RavenDB release.** This action is built
-> and maintained by [Lucas R. Tavares](https://github.com/leadsoftlucas), a RavenDB
-> employee, on his own initiative and in his own personal GitHub account. It is
-> **not published by RavenDB the company, not covered by RavenDB's official support,
-> and not listed on the GitHub Marketplace.** Use it, fork it, or copy from it —
-> just don't assume it carries RavenDB's institutional backing. See
-> [Status and scope](#status-and-scope) below.
+> **Maintained by RavenDB.** Originally created by [Lucas R. Tavares](https://github.com/leadsoftlucas) (Sales Engineer / Solution Architect). Experimental: under review by Engineering; not yet covered by official support.
 
 ## What it does
 
@@ -56,7 +50,7 @@ from outside a CI runner, this is not that.
 ```yaml
 - name: Start RavenDB
   id: ravendb
-  uses: leadsoftlucas/ravendb-github-action@main # pin to a commit SHA in real use — see "Versioning"
+  uses: ravendb/ravendb-github-action@main # pin to a commit SHA in real use — see "Versioning"
   with:
     database-name: MyTestDb
 
@@ -87,7 +81,7 @@ jobs:
 
       - name: Start RavenDB
         id: ravendb
-        uses: leadsoftlucas/ravendb-github-action@main
+        uses: ravendb/ravendb-github-action@main
         with:
           database-name: Northwind
           load-sample-data: "true"
@@ -176,7 +170,7 @@ a build that won't change under you.
 
 ## Status and scope
 
-This repository is an independent effort to close a specific, observable gap: at the
+This repository exists to close a specific, observable gap: at the
 time this was written, searching the
 [GitHub Marketplace](https://github.com/marketplace) for "ravendb" returned zero
 results, while comparable databases (MongoDB, DynamoDB, InfluxDB, Couchbase) are
@@ -184,9 +178,18 @@ represented by multiple listed actions. This is the free, low-effort fix — a
 `setup-<database>`-style action for CI, with no billing and no cloud provisioning.
 RavenDB Cloud provisioning is out of scope for this repository.
 
-If RavenDB (the company) decides to adopt, fork, or officially take over this
-project, that is a decision for RavenDB to make — this repository does not presume
-it in advance.
+The action is experimental: it is under review by RavenDB Engineering and is not
+yet covered by official support. It is **not yet listed on the GitHub Marketplace**
+and does not yet carry a verified-creator badge; that badge requires the
+organization's verified domain, which can now be requested, since the repository
+belongs to the RavenDB organization.
+
+## Provenance
+
+Created by Lucas R. Tavares in his personal account at
+`github.com/leadsoftlucas/ravendb-github-action` and transferred to the RavenDB
+organization in October 2026, with full history and authorship preserved. The license
+is MIT, with copyright held by RavenDB.
 
 ## Contributing
 
@@ -195,7 +198,7 @@ changes aligned with what's described above rather than expanding scope.
 
 ## License
 
-[MIT](LICENSE) © 2026 Lucas R. Tavares
+[MIT](LICENSE) © 2026 RavenDB
 
 ## Related links
 
